@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Morello Family Archives - a single-page web application for visualizing GEDCOM genealogy data. Vanilla HTML/CSS/JS with no build step.
+Family Archives Genealogy Explorer - a single-page web application for visualizing GEDCOM genealogy data. Pure vanilla HTML/CSS/JS with no build step.
 
 ## Quick Start
 
 ```bash
 python3 -m http.server 8000
-# Visit http://localhost:8000
+# Visit http://localhost:8000, upload a GEDCOM file
 ```
 
 ## Architecture
@@ -18,25 +18,25 @@ python3 -m http.server 8000
 ### Files
 
 - `index.html` - HTML structure + all CSS (inline `<style>`)
-- `app.js` - All JavaScript classes and logic
-- `stefano_full.ged` - Default GEDCOM file (auto-loaded on startup)
-- `sync_gedcom.py` - Optional file watcher for auto-uploading GEDCOM changes
+- `app.js` - All JavaScript classes and logic (~5000 lines)
+- `familysearch_scraper.py` - Playwright-based FamilySearch tree exporter
+- `sync_gedcom.py` - File watcher for auto-uploading GEDCOM changes
 
 ### Main Classes (app.js)
 
-| Class | Line | Purpose |
-|-------|------|---------|
-| `FamilySearchClient` | ~10 | OAuth2 client for FamilySearch API |
-| `GenealogyDataIndexer` | ~605 | Indexes data for AI queries |
-| `AIQueryEngine` | ~1170 | Natural language query processing |
-| `GedcomParser` | ~1447 | Parses GEDCOM format into structured data |
-| `GenealogyApp` | ~1750 | Main controller - UI, rendering, state |
+| Class | Purpose |
+|-------|---------|
+| `FamilySearchClient` | OAuth2 client for FamilySearch API integration |
+| `GenealogyDataIndexer` | Indexes parsed data for AI natural language queries |
+| `AIQueryEngine` | Processes natural language questions about the family tree |
+| `GedcomParser` | Parses GEDCOM 5.5.1/7.0 format into structured Maps |
+| `GenealogyApp` | Main controller - UI state, rendering, event handling |
 
 ### Data Flow
 
-1. GEDCOM loaded → `GedcomParser.parse()` → `this.data` (Maps of individuals, families, sources)
-2. `GenealogyDataIndexer` builds search indexes
-3. UI renders via D3.js (tree, charts) and Leaflet (maps)
+1. GEDCOM uploaded → `GedcomParser.parse()` → `this.data` (Maps of individuals, families, sources)
+2. `GenealogyDataIndexer` builds search indexes for AI queries
+3. UI renders via D3.js (tree, charts) and Leaflet (map with birth locations)
 
 ### Key Data Structures
 
@@ -49,49 +49,48 @@ this.data = {
 
 // Person object
 {
-  id: '@I123@',
-  name: { given, surname, full },
+  id, name: { given, surname, full },
   sex: 'M' | 'F',
-  birth: { date: { year, month, day }, place },
+  birth: { date: { year, month, day }, place, coords: { lat, lng } },
   death: { date, place },
-  familySpouse: ['@F1@'],  // Families as spouse
-  familyChild: ['@F2@']   // Families as child
+  familySpouse: ['@F1@'],  // Families where person is spouse
+  familyChild: ['@F2@']   // Families where person is child
 }
 ```
 
 ### Relationship System
 
-Reference-based calculation from selected person:
-- `this.referencePerson` - currently selected person ID
-- `this.relationshipCache` - Map of personId → relationship data
-- Colors defined in `this.relationshipColors` (ancestor=blue, descendant=green, etc.)
+All filtering is relative to a reference person:
+- `this.referencePerson` - selected person ID for relationship calculations
+- `this.relationshipCache` - Map of personId → { type, generation, degree }
+- `calculateRelationships(personId)` - BFS traversal to classify all individuals
+- Colors: ancestor=blue, descendant=green, sibling=teal, cousin=purple, spouse=pink, in-law=orange
 
 ## UI Tabs
 
-1. **Search** - Text search with relationship filtering
-2. **Tree** - D3.js family tree (ancestors + descendants)
-3. **Statistics** - Birth timeline, surname charts
-4. **Map** - Leaflet map with birth locations
-5. **AI** - Natural language queries
+1. **Search** - Text search with relationship type filtering
+2. **Tree** - D3.js pedigree visualization (ancestors + descendants)
+3. **Statistics** - Birth timeline, surname distribution, lifespan charts
+4. **Map** - Leaflet map with clustered birth location markers
+5. **AI Query** - Natural language questions (requires API key config)
 
-## Dependencies (CDN)
+## Dependencies (CDN-loaded)
 
-- D3.js v7
-- Leaflet 1.9.4
-- Google Fonts (Fraunces, DM Sans, Cormorant Garamond, Source Serif 4)
-
-## Deployment
-
-```bash
-chmod 644 index.html app.js *.ged
-```
-
-Deploy to any static file server. `.htaccess` included for Apache.
+- D3.js v7 (tree visualization, charts)
+- Leaflet 1.9.4 (geographic map)
+- Google Fonts (Fraunces, DM Sans, Source Serif 4)
 
 ## Key Methods
 
-- `loadDefaultGedcom()` - Change default GEDCOM file (~line 1737)
-- `renderBothTree()` - Tree visualization with D3
-- `calculateRelationships(personId)` - BFS relationship calculation
-- `showEmptyState()` - Welcome page when no data loaded
-- `performSearch()` - Search with filters applied
+- `showEmptyState()` - Welcome page when no GEDCOM loaded
+- `performSearch()` - Search with relationship and attribute filters
+- `renderBothTree(personId)` - D3 tree with both ancestors and descendants
+- `initMap()` - Leaflet map initialization (call `invalidateSize()` after tab switch)
+- `calculateRelationships(personId)` - BFS relationship classification
+
+## Styling Notes
+
+- All CSS is inline in `index.html` `<style>` block
+- CSS variables for theming in `:root` and `[data-theme="dark"]`
+- Mobile breakpoints: 768px (tablet), 480px (phone), 360px (small phone)
+- Do NOT add `display: flex` to body - breaks child element layouts
