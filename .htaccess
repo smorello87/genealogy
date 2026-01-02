@@ -1,0 +1,12 @@
+# Allow access to this directory
+Options +Indexes
+Require all granted
+
+# Serve .ged files as text
+AddType text/plain .ged
+
+# Allow JavaScript modules
+AddType application/javascript .js
+
+# Disable directory listing in production (optional)
+# Options -Indexes
