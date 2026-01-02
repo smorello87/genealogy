@@ -82,8 +82,6 @@
       overflow-x: hidden;
       font-size: 15px;
       -webkit-font-smoothing: antialiased;
-      display: flex;
-      flex-direction: column;
     }
 
     /* Typography */
@@ -271,7 +269,6 @@
       max-width: 1400px;
       margin: 0 auto;
       padding: 1.5rem 2rem;
-      flex: 1;
     }
 
     .tab-content {
@@ -506,10 +503,16 @@
       border: 1px solid var(--border-light);
       border-radius: 12px;
       padding: 0;
-      height: calc(100vh - 280px);
-      min-height: 500px;
+      width: 100%;
+      height: 700px;
       position: relative;
       overflow: hidden;
+    }
+
+    #tree-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
     .tree-controls {
@@ -876,7 +879,9 @@
       border: 1px solid var(--border-color);
       border-radius: 12px;
       overflow: hidden;
+      width: 100%;
       height: 600px;
+      position: relative;
     }
 
     #genealogy-map {
@@ -1149,8 +1154,7 @@
     .ai-container {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 220px);
-      min-height: 500px;
+      height: 600px;
     }
 
     .ai-settings {
@@ -1517,8 +1521,7 @@
     /* AI Interface - Mobile */
     @media (max-width: 768px) {
       .ai-container {
-        height: calc(100vh - 180px);
-        min-height: 400px;
+        height: 500px;
       }
 
       .ai-settings-row {
@@ -1587,8 +1590,7 @@
 
     @media (max-width: 480px) {
       .ai-container {
-        height: calc(100vh - 160px);
-        min-height: 350px;
+        height: 400px;
       }
 
       .ai-settings-header {
@@ -2280,8 +2282,7 @@
 
       /* Tree view */
       .tree-container {
-        height: calc(100vh - 200px);
-        min-height: 400px;
+        height: 500px;
         border-radius: 10px;
       }
 
@@ -2501,8 +2502,7 @@
 
       /* Tree view */
       .tree-container {
-        height: calc(100vh - 180px);
-        min-height: 350px;
+        height: 400px;
       }
 
       .tree-controls {
@@ -2524,7 +2524,7 @@
 
       /* Map */
       .map-container {
-        height: 380px;
+        height: 350px;
       }
 
       /* Modal - full width */
@@ -4454,7 +4454,7 @@
       background: var(--bg-card);
       border-top: 1px solid var(--border-light);
       padding: 1.25rem 2rem;
-      margin-top: auto;
+      margin-top: 2rem;
       position: relative;
     }
 

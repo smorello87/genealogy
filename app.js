@@ -4970,6 +4970,13 @@ class GenealogyApp {
     this.map = L.map('genealogy-map').setView([centerLat, centerLng], 6);
     this.updateMapTiles();
 
+    // Force map to recalculate size (critical for containers that were hidden)
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 100);
+
     locations.forEach(loc => {
       // Determine marker color based on dominant relationship type
       let markerColor = '#8b2635'; // Default wine color
